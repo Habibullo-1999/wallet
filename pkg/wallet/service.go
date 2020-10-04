@@ -13,6 +13,7 @@ var ErrAmountMustBePositive = errors.New("amount must be greater than zero")
 var ErrAccountNotFound = errors.New("account not found")
 var ErrNotEnoughBalance = errors.New("Error Not Enough Balance")
 var ErrPaymentNotFound = errors.New("Payment not found")
+var ErrFavoriteNotFound = errors.New("Favorite not found")
 
 
 type Service struct {
@@ -180,7 +181,7 @@ func (s *Service)PayFromFavorite(favoriteID string) (*types.Payment, error) {
 	for _, fav := range  s.favorites{
 		if fav.ID == favoriteID {
 			favorite = fav
-			break
+			return nil,ErrFavoriteNotFound
 		}
 	}
 	payment,err := s.Pay(favorite.AccountID,favorite.Amount,favorite.Category)
