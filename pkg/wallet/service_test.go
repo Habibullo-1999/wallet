@@ -31,7 +31,7 @@ var defaultTestAccount = testAccount{
 		amount   types.Money
 		category types.PaymentCategory
 	}{
-		{amount: 10_000_00, category: "auto"},
+		{amount: 10_000, category: "auto"},
 	},
 }
 
@@ -129,7 +129,7 @@ func TestService_FindPaymentByID_fail(t *testing.T) {
 		return
 	}
 	_, err = s.FindPaymentByID(uuid.New().String())
-	if err== nil {
+	if err == nil {
 		t.Error("FindPaymentByID(): must return error, returned nil")
 		return
 	}
@@ -162,15 +162,15 @@ func TestService_Reject_success(t *testing.T) {
 
 }
 
-func TestService_Repeat_success(t *testing.T){
+func TestService_Repeat_success(t *testing.T) {
 	s := newTestService()
 	_, payments, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Errorf("error = %v", err)
 		return
 	}
-	payment:=payments[0];
-	_,err = s.Repeat(payment.ID)
+	payment := payments[0]
+	_, err = s.Repeat(payment.ID)
 	if err != nil {
 		t.Errorf("Repeat(): error = %v", err)
 		return
@@ -178,4 +178,39 @@ func TestService_Repeat_success(t *testing.T){
 
 }
 
+func TestService_FavoritePayment_success(t *testing.T) {
+	s := newTestService()
+	_, payments, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Errorf("%v", err)
+		return
+	}
+	payment := payments[0]
+	_, err = s.FavoritePayment(payment.ID, "score AlifAcademy")
+	if err != nil {
+		t.Errorf("%v", err)
+		return
+	}
 
+}
+
+func TestService_PayFromFavorite_success(t *testing.T) {
+	s := newTestService()
+	_, payments, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Errorf("%v", err)
+		return
+	}
+	payment := payments[0]
+	favorite, err := s.FavoritePayment(payment.ID, "score AlifAcademy")
+	if err != nil {
+		t.Errorf("%v", err)
+		return
+	}
+
+	_, err = s.PayFromFavorite(favorite.ID)
+	if err != nil {
+		t.Errorf("%v", err)
+		return
+	}
+}

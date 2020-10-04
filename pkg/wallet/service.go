@@ -17,6 +17,7 @@ var ErrPaymentNotFound = errors.New("Payment not found")
 
 type Service struct {
 	nextAccountID int64
+	favorites	  []*types.Favorite
 	accounts      []*types.Account
 	payments      []*types.Payment
 }
@@ -154,4 +155,37 @@ func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 	}
 	s.payments = append(s.payments, payments)
 	return payments,nil
+}
+
+func (s *Service) FavoritePayment(paymentID string, name string) (*types.Favorite, error){
+	payment, err := s.FindPaymentByID(paymentID)
+
+	if err != nil{
+		return nil,err
+	}
+	paymentIDE := uuid.New().String()
+	favorite := &types.Favorite{
+		ID:			paymentIDE,
+		AccountID:	payment.AccountID,
+		Name:		name,
+		Amount:		payment.Amount,
+		Category:	payment.Category,
+	}	
+	s.favorites = append(s.favorites, favorite)
+	return favorite,nil
+}
+
+func (s *Service)PayFromFavorite(favoriteID string) (*types.Payment, error) {
+	var favorite *types.Favorite
+	for _, fav := range  s.favorites{
+		if fav.ID == favoriteID {
+			favorite = fav
+			break
+		}
+	}
+	payment,err := s.Pay(favorite.AccountID,favorite.Amount,favorite.Category)
+	if err != nil{
+		return nil,err
+	}
+	return payment,nil
 }
