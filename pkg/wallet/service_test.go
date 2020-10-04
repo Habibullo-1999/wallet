@@ -194,6 +194,23 @@ func TestService_FavoritePayment_success(t *testing.T) {
 
 }
 
+func TestService_FindFavoriteByID_success(t *testing.T) {
+	s := newTestService()
+	_, payments, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Errorf("%v", err)
+		return
+	}
+	payment := payments[0]
+	_, err = s.FavoritePayment(payment.ID,"score AlifAcademy")
+	if err != nil {
+		t.Errorf("%v", err)
+		return
+	}
+
+
+}
+
 func TestService_PayFromFavorite_success(t *testing.T) {
 	s := newTestService()
 	_, payments, err := s.addAccount(defaultTestAccount)
