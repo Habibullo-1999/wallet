@@ -76,7 +76,7 @@ func TestService_FindAccountById(t *testing.T) {
 	myResult:= types.Account {
 		ID:		1,
 		Phone:	"+992926421505",
-		Balance:101,
+		Balance:0,
 	}
 
 	if !reflect.DeepEqual(&myResult , result) {
