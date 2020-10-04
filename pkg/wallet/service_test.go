@@ -161,3 +161,21 @@ func TestService_Reject_success(t *testing.T) {
 	}
 
 }
+
+func TestService_Repeat_success(t *testing.T){
+	s := newTestService()
+	_, payments, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Errorf("error = %v", err)
+		return
+	}
+	payment:=payments[0];
+	_,err = s.Repeat(payment.ID)
+	if err != nil {
+		t.Errorf("Repeat(): error = %v", err)
+		return
+	}
+
+}
+
+

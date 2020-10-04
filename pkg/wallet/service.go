@@ -131,3 +131,22 @@ func (s *Service)Reject(paymentID string) error {
 	return nil
 	
 }
+
+ 
+func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
+	payment, err := s.FindPaymentByID(paymentID)
+
+	if err != nil{
+		return nil,err
+	}
+	paymentIDE := uuid.New().String()
+	payments := &types.Payment{
+		ID:			paymentIDE,
+		AccountID:	payment.AccountID,
+		Amount:		payment.Amount,
+		Category:	payment.Category,
+		Status:		payment.Status,
+	}
+	s.payments = append(s.payments, payments)
+	return payments,nil
+}
