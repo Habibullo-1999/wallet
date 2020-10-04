@@ -83,3 +83,58 @@ func TestService_FindAccountById(t *testing.T) {
 		t.Errorf("invalid result, expected: %v, actual: %v", &myResult, result)
 	}
 }
+func TestService_FindPaymentByID_success(t *testing.T) {
+	svc := &Service{}
+	svc.RegisterAccount("+992926421505")
+
+	payment, err := svc.Pay(2, types.Money(110), "cat")
+
+	if err != nil {
+		switch err {
+			case ErrAmountMustBePositive:
+				fmt.Println("Сумма должна быт положительной")
+			case ErrAccountNotFound:
+				fmt.Println("Аккаунт пользователя не найден")
+			case ErrNotEnoughBalance:
+				fmt.Println("Ошибка! недостаточно баланса")
+			}
+			return 
+	}
+
+	result, err := svc.FindPaymentByID(payment.ID)
+	if err != nil{
+		fmt.Println("Платёж не найдень")
+	}
+
+	if !reflect.DeepEqual(payment, result) {
+		t.Errorf("invalid result, expected: %v, actual: %v", payment, result)
+	}
+}
+
+func TestService_Reject_success(t *testing.T) {
+	svc := &Service{}
+	svc.RegisterAccount("+992926421505")
+
+	payment, err := svc.Pay(1, types.Money(110), "cat")
+	if err != nil {
+		switch err {
+			case ErrAmountMustBePositive:
+				fmt.Println("Сумма должна быт положительной")
+			case ErrAccountNotFound:
+				fmt.Println("Аккаунт пользователя не найден")
+			case ErrNotEnoughBalance:
+				fmt.Println("Ошибка! недостаточно баланса")
+			}
+			return 
+	}
+	
+	result:=svc.Reject(payment.ID)
+	if !reflect.DeepEqual(nil, result) {
+		t.Errorf("invalid result, expected: %v, actual: %v", nil, result)
+	}
+
+
+
+} 
+
+
