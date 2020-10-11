@@ -2,6 +2,7 @@ package wallet
 
 import (
 	"errors"
+	//"log"
 	"os"
 	"strconv"
 
@@ -16,6 +17,7 @@ var ErrAccountNotFound = errors.New("account not found")
 var ErrNotEnoughBalance = errors.New("not enough balance")
 var ErrPaymentNotFound = errors.New("payment not found")
 var ErrFavoriteNotFound = errors.New("favorite not found")
+var ErrFileNotFound = errors.New("File not found")
 
 type Service struct {
 	nextAccountID int64
@@ -175,7 +177,7 @@ func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 }
 
 func (s *Service) ExportToFile(path string) error {
-	file, err := os.Create("./data/message.txt")
+	file, err := os.Create(path)
 	if err != nil {
 		return err
 	}
@@ -184,6 +186,10 @@ func (s *Service) ExportToFile(path string) error {
 			return
 		}
 	}()
+	// if err != nil {
+	// 	log.Print(err)
+	// 	return ErrFileNotFound
+	// }
 	str := ""
 	for _, data := range s.accounts {
 		str += strconv.Itoa(int(data.ID)) + ";"
