@@ -164,9 +164,9 @@ func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 	if err != nil {
 		return nil, err
 	}
-	payment,err := s.Pay(favorite.AccountID,favorite.Amount,favorite.Category)
-	if err != nil{
-		return nil,err
+	payment, err := s.Pay(favorite.AccountID, favorite.Amount, favorite.Category)
+	if err != nil {
+		return nil, err
 	}
-	return payment,nil
+	return payment, nil
 }
