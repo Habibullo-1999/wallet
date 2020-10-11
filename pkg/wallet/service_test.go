@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Habibullo-1999/wallet/pkg/types"
+	"github.com/coursar/wallet/pkg/types"
 	"github.com/google/uuid"
 
 )
@@ -84,7 +84,7 @@ func TestService_RegisterAccount_success(t *testing.T) {
 	}
 }
 
-func TestService_FindAccountById(t *testing.T) {
+func TestService_FindAccountById_success(t *testing.T) {
 	svc := &Service{}
 	svc.RegisterAccount("+992926421505")
 
@@ -101,6 +101,17 @@ func TestService_FindAccountById(t *testing.T) {
 	if !reflect.DeepEqual(&myResult, result) {
 		t.Errorf("invalid result, expected: %v, actual: %v", &myResult, result)
 	}
+}
+func TestService_FindAccountById_fail(t *testing.T) {
+	svc := &Service{}
+	svc.RegisterAccount("+992926421505")
+
+	_, err := svc.FindAccountByID(5)
+	if err != ErrAccountNotFound {
+		t.Errorf("Deposit(): must return ErrAccountNotFound, returned = %v", err)
+		return
+	}
+
 }
 func TestService_FindPaymentByID_success(t *testing.T) {
 	s := newTestService()
@@ -161,6 +172,31 @@ func TestService_Reject_success(t *testing.T) {
 	}
 
 }
+func TestService_Reject_fail(t *testing.T) {
+	s := newTestService()
+	account, err := s.addAccountWithBalance("+992926421505", 10_000_00)
+	if err != nil {
+		t.Errorf("error = %v", err)
+		return
+	}
+
+	_, err = s.Pay(account.ID, 1000_00, "auto")
+	if err != nil {
+		t.Errorf("Reject(): can't create payment, error = %v", err)
+		return
+	}
+
+	err = s.Reject(uuid.New().String())
+	if err != ErrPaymentNotFound {
+		t.Errorf("Reject(): must return ErrPaymentNotFound, returned = %v", err)
+		return
+	}
+	if err != ErrPaymentNotFound {
+		t.Errorf("Reject(): must return ErrPaymentNotFound, returned = %v", err)
+		return
+	}
+
+}
 
 func TestService_Repeat_success(t *testing.T) {
 	s := newTestService()
@@ -202,13 +238,63 @@ func TestService_FindFavoriteByID_success(t *testing.T) {
 		return
 	}
 	payment := payments[0]
-	_, err = s.FavoritePayment(payment.ID,"score AlifAcademy")
+	favorite, err := s.FavoritePayment(payment.ID, "score AlifAcademy")
+	if err != nil {
+		t.Errorf("%v", err)
+		return
+	}
+	_, err = s.FindFavoriteByID(favorite.ID)
+	
+	if err != nil {
+		t.Errorf("%v",err)
+		return
+	}
+
+
+}
+func TestService_FindFavoriteByID_fail(t *testing.T) {
+	s := newTestService()
+	_, _, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Errorf("%v", err)
 		return
 	}
 
 
+	_, err = s.FindFavoriteByID(uuid.New().String())
+	
+	if err != ErrFavoriteNotFound {
+		t.Errorf("FindPaymentByID(): must return ErrFavoriteNotFound, returned = %v", err)
+		return
+	}
+
+}
+func TestService_Deposit_AmountMustBePositive(t *testing.T) {
+	s := newTestService()
+	account, _, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Errorf("%v", err)
+		return
+	}
+	err = s.Deposit(account.ID,-1_000_00)
+	if err != ErrAmountMustBePositive {
+		t.Errorf("Deposit(): must return ErrAmountMustBePositive, returned = %v", err)
+		return
+	}	
+}
+
+func TestService_Deposit_ErrAccountNotFound(t *testing.T) {
+	s := newTestService()
+	account, _, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Errorf("%v", err)
+		return
+	}
+	err = s.Deposit(account.ID+1,1_000_00)
+	if err != ErrAccountNotFound {
+		t.Errorf("Deposit(): must return ErrAccountNotFound, returned = %v", err)
+		return
+	}
 }
 
 func TestService_PayFromFavorite_success(t *testing.T) {
