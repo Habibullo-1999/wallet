@@ -2,9 +2,10 @@ package wallet
 
 import (
 	"errors"
-	//"log"
+	"io"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/Habibullo-1999/wallet/pkg/types"
 	"github.com/google/uuid"
@@ -201,5 +202,55 @@ func (s *Service) ExportToFile(path string) error {
 		return err
 	}
 
+	return nil
+}
+func (s *Service) ImportToFile(path string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			return
+		}
+	}()
+
+	content := make([]byte, 0)
+	buf := make([]byte, 4)
+
+	for {
+		read, err := file.Read(buf)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+		content = append(content, buf[:read]...)
+	}
+	accounts := strings.Split(string(content), "|")
+	accounts = accounts[:len(accounts)-1]
+
+	for _, acc := range accounts {
+		splits := strings.Split(acc, ";")
+
+		id, err := strconv.Atoi(splits[0])
+		if err != nil {
+			return err
+		}
+
+		balance, err := strconv.Atoi(splits[2])
+		if err != nil {
+			return err
+		}
+
+		account := &types.Account{
+			ID:      int64(id),
+			Phone:   types.Phone(splits[1]),
+			Balance: types.Money(balance),
+		}
+
+		s.accounts = append(s.accounts, account)
+	}
 	return nil
 }
