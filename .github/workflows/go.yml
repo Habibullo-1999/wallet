@@ -2,7 +2,7 @@ name: Go
 
 on:
   push:
-    branches: [ master,v1 ]
+    branches: [ master,v1,feature/favorite ]
   pull_request:
     branches: [ master ]
 
