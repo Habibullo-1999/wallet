@@ -9,7 +9,7 @@ import (
 
 func main() {
 	s := &wallet.Service{}
-	err := s.ImportToFile("../data/export.txt")
+	err := s.ImportFromFile("../data/export.txt")
 	if err == nil {
 		fmt.Println("success")
 	}

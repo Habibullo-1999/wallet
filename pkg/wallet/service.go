@@ -204,7 +204,7 @@ func (s *Service) ExportToFile(path string) error {
 
 	return nil
 }
-func (s *Service) ImportToFile(path string) error {
+func (s *Service) ImportFromFile(path string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
