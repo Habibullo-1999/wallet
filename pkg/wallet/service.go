@@ -2,9 +2,12 @@ package wallet
 
 import (
 	"errors"
+	"os"
+	"strconv"
 
 	"github.com/Habibullo-1999/wallet/pkg/types"
 	"github.com/google/uuid"
+
 )
 
 var ErrPhoneRegistered = errors.New("phone already registered")
@@ -169,4 +172,28 @@ func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error) {
 		return nil, err
 	}
 	return payment, nil
+}
+
+func (s *Service) ExportToFile(path string) error {
+	file, err := os.Create("./data/message.txt")
+	if err != nil {
+		return err
+	}
+	defer func() {
+		if cerr := file.Close(); cerr != nil {
+			return
+		}
+	}()
+	str := ""
+	for _, data := range s.accounts {
+		str += strconv.Itoa(int(data.ID)) + ";"
+		str += string(data.Phone) + ";"
+		str += strconv.Itoa(int(data.Balance)) + "|"
+	}
+	_, err = file.Write([]byte(str))
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
