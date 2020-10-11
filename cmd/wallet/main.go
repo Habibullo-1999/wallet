@@ -9,6 +9,6 @@ func main() {
 	s.RegisterAccount("+992000000003")
 	s.RegisterAccount("+992000000004")
 	s.RegisterAccount("+992000000005")
-	//s.ExportToFile("./data/message.txt")
+	s.ExportToFile("./data/message.txt")
 
 }
