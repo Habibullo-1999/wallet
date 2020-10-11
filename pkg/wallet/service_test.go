@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/coursar/wallet/pkg/types"
+	"github.com/Habibullo-1999/wallet/pkg/types"
 	"github.com/google/uuid"
 
 )
