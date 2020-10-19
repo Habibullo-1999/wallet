@@ -2,13 +2,14 @@ package wallet
 
 import (
 	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"fmt"
 
 	"github.com/Habibullo-1999/wallet/pkg/types"
 	"github.com/google/uuid"
@@ -258,239 +259,448 @@ func (s *Service) ImportFromFile(path string) error {
 	return nil
 }
 
-func (s *Service) Export(dir string) (err error) {
+// func (s *Service) Export(dir string) (err error) {
 
-	if len(s.accounts) !=0 {
-	
-	file, err := os.OpenFile("../"+dir+"/accounts.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			if err != nil {
-				err = cerr
-				log.Print(err)
+// 	if len(s.accounts) !=0 {
+
+// 	file, err := os.OpenFile("../"+dir+"/accounts.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer func() {
+// 		if cerr := file.Close(); cerr != nil {
+// 			if err != nil {
+// 				err = cerr
+// 				log.Print(err)
+// 			}
+// 		}
+// 	}()
+// 	str := ""
+
+// 	for _, data := range s.accounts {
+// 		str += strconv.Itoa(int(data.ID)) + ";"
+// 		str += string(data.Phone) + ";"
+// 		str += strconv.Itoa(int(data.Balance)) + "\n"
+// 	}
+// 	err = ioutil.WriteFile(file.Name(), []byte(str), 0666)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	}
+
+// 	if len(s.payments) !=0 {
+// 	file, err := os.OpenFile("../"+dir+"/payments.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer func() {
+// 		if cerr := file.Close(); cerr != nil {
+// 			if err != nil {
+// 				err = cerr
+// 				log.Print(err)
+// 			}
+// 		}
+// 	}()
+// 	str := ""
+
+// 	for _, data := range s.payments {
+// 		str += string(data.ID) + ";"
+// 		str += strconv.Itoa(int(data.AccountID)) + ";"
+// 		str += strconv.Itoa(int(data.Amount)) +";"
+// 		str += string(data.Category)+";"
+// 		str += string(data.Status)+"\n"
+// 	}
+// 	err = ioutil.WriteFile(file.Name(), []byte(str), 0666)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	}
+
+// 	if len(s.favorites) !=0 {
+
+// 	file, err := os.OpenFile("../"+dir+"/favorites.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer func() {
+// 		if cerr := file.Close(); cerr != nil {
+// 			if err != nil {
+// 				err = cerr
+// 				log.Print(err)
+// 			}
+// 		}
+// 	}()
+// 	str := ""
+
+// 	for _, data := range s.favorites {
+// 		str += string(data.ID) + ";"
+// 		str += strconv.Itoa(int(data.AccountID)) + ";"
+// 		str += strconv.Itoa(int(data.Amount)) +";"
+// 		str += string(data.Name)+";"
+// 		str += string(data.Category)+"\n"
+
+// 	}
+// 	err = ioutil.WriteFile(file.Name(), []byte(str), 0666)
+// 	if err != nil {
+// 		return err
+// 	}
+// }
+// 	return nil
+// }
+
+// func (s *Service) Import(dir string) (err error) {
+// 	_, err = os.Stat("../../" + dir + "/accounts.dump")
+
+// 	if err == nil {
+// 	  content, err := ioutil.ReadFile("../../" + dir + "/accounts.dump")
+// 	  if err != nil {
+// 		return err
+// 	  }
+
+// 	  strArray := strings.Split(string(content), "\n")
+// 	  if len(strArray) > 0 {
+// 		strArray = strArray[:len(strArray)-1]
+// 	  }
+// 	  for _, v := range strArray {
+// 		strArrAcount := strings.Split(v, ";")
+// 		fmt.Println(strArrAcount)
+
+// 		id, err := strconv.ParseInt(strArrAcount[0], 10, 64)
+// 		if err != nil {
+// 		  return err
+// 		}
+// 		balance, err := strconv.ParseInt(strArrAcount[2], 10, 64)
+// 		if err != nil {
+// 		  return err
+// 		}
+// 		flag := true
+// 		for _, v := range s.accounts {
+// 		  if v.ID == id {
+// 			v.Phone = types.Phone(strArrAcount[1])
+// 			v.Balance = types.Money(balance)
+// 			flag = false
+// 		  }
+// 		}
+// 		if flag {
+// 		  account := &types.Account{
+// 			ID:      id,
+// 			Phone:   types.Phone(strArrAcount[1]),
+// 			Balance: types.Money(balance),
+// 		  }
+// 		  s.accounts = append(s.accounts, account)
+// 		}
+// 	  }
+// 	}
+
+// 	_, err1 := os.Stat("../../" + dir + "/payments.dump")
+
+// 	if err1 == nil {
+// 	  content, err := ioutil.ReadFile("../../" + dir + "/payments.dump")
+// 	  if err != nil {
+// 		return err
+// 	  }
+
+// 	  strArray := strings.Split(string(content), "\n")
+// 	  if len(strArray) > 0 {
+// 		strArray = strArray[:len(strArray)-1]
+// 	  }
+// 	  for _, v := range strArray {
+// 		strArrAcount := strings.Split(v, ";")
+// 		fmt.Println(strArrAcount)
+
+// 		id := strArrAcount[0]
+// 		if err != nil {
+// 		  return err
+// 		}
+// 		aid, err := strconv.ParseInt(strArrAcount[1], 10, 64)
+// 		if err != nil {
+// 		  return err
+// 		}
+// 		amount, err := strconv.ParseInt(strArrAcount[2], 10, 64)
+// 		if err != nil {
+// 		  return err
+// 		}
+// 		flag := true
+// 		for _, v := range s.payments {
+// 		  if v.ID == id {
+// 			v.AccountID = aid
+// 			v.Amount = types.Money(amount)
+// 			v.Category = types.PaymentCategory(strArrAcount[3])
+// 			v.Status = types.PaymentStatus(strArrAcount[4])
+// 			flag = false
+// 		  }
+// 		}
+// 		if flag {
+// 		  data := &types.Payment{
+// 			ID:        id,
+// 			AccountID: aid,
+// 			Amount:    types.Money(amount),
+// 			Category:  types.PaymentCategory(strArrAcount[3]),
+// 			Status:    types.PaymentStatus(strArrAcount[4]),
+// 		  }
+// 		  s.payments = append(s.payments, data)
+// 		}
+// 	  }
+// 	}
+
+// 	_, err2 := os.Stat("../../" + dir + "/favorites.dump")
+
+// 	if err2 == nil {
+// 	  content, err := ioutil.ReadFile("../../" + dir + "/favorites.dump")
+// 	  if err != nil {
+// 		return err
+// 	  }
+
+// 	  strArray := strings.Split(string(content), "\n")
+// 	  if len(strArray) > 0 {
+// 		strArray = strArray[:len(strArray)-1]
+// 	  }
+// 	  for _, v := range strArray {
+// 		strArrAcount := strings.Split(v, ";")
+// 		fmt.Println(strArrAcount)
+
+// 		id := strArrAcount[0]
+// 		if err != nil {
+// 		  return err
+// 		}
+// 		aid, err := strconv.ParseInt(strArrAcount[1], 10, 64)
+// 		if err != nil {
+// 		  return err
+// 		}
+// 		amount, err := strconv.ParseInt(strArrAcount[2], 10, 64)
+// 		if err != nil {
+// 		  return err
+// 		}
+// 		flag := true
+// 		for _, v := range s.favorites {
+// 		  if v.ID == id {
+// 			v.AccountID = aid
+// 			v.Amount = types.Money(amount)
+// 			v.Category = types.PaymentCategory(strArrAcount[3])
+// 			flag = false
+// 		  }
+// 		}
+// 		if flag {
+// 		  data := &types.Favorite{
+// 			ID:        id,
+// 			AccountID: aid,
+// 			Amount:    types.Money(amount),
+// 			Category:  types.PaymentCategory(strArrAcount[3]),
+// 		  }
+// 		  s.favorites = append(s.favorites, data)
+// 		}
+// 	  }
+// 	}
+
+// 	return nil
+// }
+//Export method
+func (s *Service) Export(dir string) error {
+	if len(s.accounts) > 0 {
+		file, err := os.OpenFile(dir+"/accounts.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+
+		defer func() {
+			if cerr := file.Close(); cerr != nil {
+				if err != nil {
+					err = cerr
+					log.Print(err)
+				}
 			}
+		}()
+
+		str := ""
+		for _, v := range s.accounts {
+			str += fmt.Sprint(v.ID) + ";" + string(v.Phone) + ";" + fmt.Sprint(v.Balance) + "\n"
 		}
-	}()
-	str := ""
-	
-	for _, data := range s.accounts {
-		str += strconv.Itoa(int(data.ID)) + ";"
-		str += string(data.Phone) + ";"
-		str += strconv.Itoa(int(data.Balance)) + "\n"
+		file.WriteString(str)
 	}
-	err = ioutil.WriteFile(file.Name(), []byte(str), 0666)
-	if err != nil {
-		return err
-	}
-	}
+	if len(s.payments) > 0 {
+		file, err := os.OpenFile(dir+"/payments.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
 
-
-	if len(s.payments) !=0 {	
-	file, err := os.OpenFile("../"+dir+"/payments.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			if err != nil {
-				err = cerr
-				log.Print(err)
+		defer func() {
+			if cerr := file.Close(); cerr != nil {
+				if err != nil {
+					err = cerr
+					log.Print(err)
+				}
 			}
+		}()
+
+		str := ""
+		for _, v := range s.payments {
+			str += fmt.Sprint(v.ID) + ";" + fmt.Sprint(v.AccountID) + ";" + fmt.Sprint(v.Amount) + ";" + fmt.Sprint(v.Category) + ";" + fmt.Sprint(v.Status) + "\n"
 		}
-	}()
-	str := ""
-	
-	for _, data := range s.payments {
-		str += string(data.ID) + ";"
-		str += strconv.Itoa(int(data.AccountID)) + ";"
-		str += strconv.Itoa(int(data.Amount)) +";"
-		str += string(data.Category)+";"
-		str += string(data.Status)+"\n"
-	}
-	err = ioutil.WriteFile(file.Name(), []byte(str), 0666)
-	if err != nil {
-		return err
-	}
+		file.WriteString(str)
 	}
 
-	if len(s.favorites) !=0 {
-	
-	file, err := os.OpenFile("../"+dir+"/favorites.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		if cerr := file.Close(); cerr != nil {
-			if err != nil {
-				err = cerr
-				log.Print(err)
+	if len(s.favorites) > 0 {
+		file, err := os.OpenFile(dir+"/favorites.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+
+		defer func() {
+			if cerr := file.Close(); cerr != nil {
+				if err != nil {
+					err = cerr
+					log.Print(err)
+				}
 			}
+		}()
+
+		str := ""
+		for _, v := range s.favorites {
+			str += fmt.Sprint(v.ID) + ";" + fmt.Sprint(v.AccountID) + ";" + fmt.Sprint(v.Amount) + ";" + fmt.Sprint(v.Category) + "\n"
 		}
-	}()
-	str := ""
-		
-	for _, data := range s.favorites {
-		str += string(data.ID) + ";"
-		str += strconv.Itoa(int(data.AccountID)) + ";"
-		str += strconv.Itoa(int(data.Amount)) +";"
-		str += string(data.Name)+";"
-		str += string(data.Category)+"\n"
-		
+		file.WriteString(str)
 	}
-	err = ioutil.WriteFile(file.Name(), []byte(str), 0666)
-	if err != nil {
-		return err
-	}
-}
+
 	return nil
 }
 
+//Import method
 func (s *Service) Import(dir string) (err error) {
-	_, err = os.Stat("../../" + dir + "/accounts.dump")
 
-	if err == nil {
-	  content, err := ioutil.ReadFile("../../" + dir + "/accounts.dump")
-	  if err != nil {
-		return err
-	  }
-  
-	  strArray := strings.Split(string(content), "\n")
-	  if len(strArray) > 0 {
-		strArray = strArray[:len(strArray)-1]
-	  }
-	  for _, v := range strArray {
-		strArrAcount := strings.Split(v, ";")
-		fmt.Println(strArrAcount)
-  
-		id, err := strconv.ParseInt(strArrAcount[0], 10, 64)
+	if len(s.accounts) != 0 {
+		abs, err := filepath.Abs(dir)
 		if err != nil {
-		  return err
+			log.Print(err)
+			return err
 		}
-		balance, err := strconv.ParseInt(strArrAcount[2], 10, 64)
+		abs += "/accounts.dump"
+		byteData, err := ioutil.ReadFile(abs)
 		if err != nil {
-		  return err
+			log.Println(err)
+			return err
 		}
-		flag := true
-		for _, v := range s.accounts {
-		  if v.ID == id {
-			v.Phone = types.Phone(strArrAcount[1])
-			v.Balance = types.Money(balance)
-			flag = false
-		  }
+
+		data := string(byteData)
+
+		splitSlice := strings.Split(data, "\n")
+		if len(splitSlice) > 0 {
+			splitSlice = splitSlice[:len(splitSlice)-1]
 		}
-		if flag {
-		  account := &types.Account{
-			ID:      id,
-			Phone:   types.Phone(strArrAcount[1]),
-			Balance: types.Money(balance),
-		  }
-		  s.accounts = append(s.accounts, account)
+		for _, split := range splitSlice {
+			if split != "" {
+				datas := strings.Split(split, ";")
+
+				id, err := strconv.Atoi(datas[0])
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+
+				balance, err := strconv.Atoi(datas[2])
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+
+				newAccount := &types.Account{
+					ID:      int64(id),
+					Phone:   types.Phone(datas[1]),
+					Balance: types.Money(balance),
+				}
+
+				s.accounts = append(s.accounts, newAccount)
+			}
 		}
-	  }
 	}
-  
-	_, err1 := os.Stat("../../" + dir + "/payments.dump")
-  
-	if err1 == nil {
-	  content, err := ioutil.ReadFile("../../" + dir + "/payments.dump")
-	  if err != nil {
-		return err
-	  }
-  
-	  strArray := strings.Split(string(content), "\n")
-	  if len(strArray) > 0 {
-		strArray = strArray[:len(strArray)-1]
-	  }
-	  for _, v := range strArray {
-		strArrAcount := strings.Split(v, ";")
-		fmt.Println(strArrAcount)
-  
-		id := strArrAcount[0]
+
+	if len(s.payments) != 0 {
+		abs, err := filepath.Abs(dir)
 		if err != nil {
-		  return err
+			log.Print(err)
+			return err
 		}
-		aid, err := strconv.ParseInt(strArrAcount[1], 10, 64)
+		abs += "/payments.dump"
+
+		byteData, err := ioutil.ReadFile(abs)
 		if err != nil {
-		  return err
+			log.Println(err)
+			return err
 		}
-		amount, err := strconv.ParseInt(strArrAcount[2], 10, 64)
-		if err != nil {
-		  return err
+
+		data := string(byteData)
+
+		splitSlice := strings.Split(data, "\n")
+		if len(splitSlice) > 0 {
+			splitSlice = splitSlice[:len(splitSlice)-1]
 		}
-		flag := true
-		for _, v := range s.payments {
-		  if v.ID == id {
-			v.AccountID = aid
-			v.Amount = types.Money(amount)
-			v.Category = types.PaymentCategory(strArrAcount[3])
-			v.Status = types.PaymentStatus(strArrAcount[4])
-			flag = false
-		  }
+		for _, split := range splitSlice {
+			if split != "" {
+				datas := strings.Split(split, ";")
+
+				id, err := strconv.Atoi(datas[1])
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+				category := string(datas[1])
+
+				amount, err := strconv.Atoi(datas[2])
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+				status := datas[3]
+
+				newPayment := &types.Payment{
+					ID:        string(datas[0]), // uuid
+					AccountID: int64(id),
+					Category:  types.PaymentCategory(category),
+					Amount:    types.Money(amount),
+					Status:    types.PaymentStatus(status),
+				}
+
+				s.payments = append(s.payments, newPayment)
+			}
 		}
-		if flag {
-		  data := &types.Payment{
-			ID:        id,
-			AccountID: aid,
-			Amount:    types.Money(amount),
-			Category:  types.PaymentCategory(strArrAcount[3]),
-			Status:    types.PaymentStatus(strArrAcount[4]),
-		  }
-		  s.payments = append(s.payments, data)
-		}
-	  }
 	}
-  
-	_, err2 := os.Stat("../../" + dir + "/favorites.dump")
-  
-	if err2 == nil {
-	  content, err := ioutil.ReadFile("../../" + dir + "/favorites.dump")
-	  if err != nil {
-		return err
-	  }
-  
-	  strArray := strings.Split(string(content), "\n")
-	  if len(strArray) > 0 {
-		strArray = strArray[:len(strArray)-1]
-	  }
-	  for _, v := range strArray {
-		strArrAcount := strings.Split(v, ";")
-		fmt.Println(strArrAcount)
-  
-		id := strArrAcount[0]
+
+	if len(s.favorites) != 0 {
+		abs, err := filepath.Abs(dir)
 		if err != nil {
-		  return err
+			log.Print(err)
+			return err
 		}
-		aid, err := strconv.ParseInt(strArrAcount[1], 10, 64)
+		abs += "/favorites.dump"
+		byteData, err := ioutil.ReadFile(abs)
 		if err != nil {
-		  return err
+			log.Println(err)
+			return err
 		}
-		amount, err := strconv.ParseInt(strArrAcount[2], 10, 64)
-		if err != nil {
-		  return err
+
+		data := string(byteData)
+
+		splitSlice := strings.Split(data, "\n")
+		if len(splitSlice) > 0 {
+			splitSlice = splitSlice[:len(splitSlice)-1]
 		}
-		flag := true
-		for _, v := range s.favorites {
-		  if v.ID == id {
-			v.AccountID = aid
-			v.Amount = types.Money(amount)
-			v.Category = types.PaymentCategory(strArrAcount[3])
-			flag = false
-		  }
+		for _, split := range splitSlice {
+			if split != "" {
+				datas := strings.Split(split, ";")
+
+				id, err := strconv.Atoi(datas[1])
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+
+				amount, err := strconv.Atoi(datas[2])
+				if err != nil {
+					log.Println(err)
+					return err
+				}
+
+				newFavorite := &types.Favorite{
+					ID:        datas[0],
+					AccountID: int64(id),
+					Category:  types.PaymentCategory(datas[1]),
+					Amount:    types.Money(amount),
+					Name:      datas[3],
+				}
+
+				s.favorites = append(s.favorites, newFavorite)
+			}
 		}
-		if flag {
-		  data := &types.Favorite{
-			ID:        id,
-			AccountID: aid,
-			Amount:    types.Money(amount),
-			Category:  types.PaymentCategory(strArrAcount[3]),
-		  }
-		  s.favorites = append(s.favorites, data)
-		}
-	  }
 	}
-  
 	return nil
 }
