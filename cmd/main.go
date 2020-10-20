@@ -10,7 +10,7 @@ import (
 
 func main() {
 	 s := &wallet.Service{}
-	s.RegisterAccount("+992926421508")
+	s.RegisterAccount("+992926421509")
 	s.RegisterAccount("+992926421506")
 	s.RegisterAccount("+992926421505")
 	s.Deposit(1,5_000_00)
