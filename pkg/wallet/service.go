@@ -12,6 +12,7 @@ import (
 
 	"github.com/Habibullo-1999/wallet/pkg/types"
 	"github.com/google/uuid"
+
 )
 
 var ErrPhoneRegistered = errors.New("phone already registered")
