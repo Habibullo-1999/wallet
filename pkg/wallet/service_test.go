@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"log"
 
 	"github.com/Habibullo-1999/wallet/pkg/types"
 	"github.com/google/uuid"
@@ -429,5 +430,34 @@ func BenchmarkSumPayment_user(b *testing.B) {
 	if want != got {
 		b.Errorf(" error, want => %v got => %v", want, got)
 	}
+
+}
+func BenchmarkSumPaymentsWithProgress_user(b *testing.B) {
+	var svc Service
+
+	account, err := svc.RegisterAccount("+992000000001")
+
+	if err != nil {
+		b.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	err = svc.Deposit(account.ID, 10000000_0000000)
+	if err != nil {
+		b.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	for i := 0; i < 1000; i++ {
+		svc.Pay(account.ID, types.Money(i), "Cafe")
+	} 
+
+	ch := svc.SumPaymentsWithProgress()
+
+	 s, ok := <-ch
+
+	if !ok {
+		b.Errorf(" method SumPaymentsWithProgress ok not closed => %v", ok)
+	} 
+
+	log.Println("=======>>>>>",s) 
 
 }
