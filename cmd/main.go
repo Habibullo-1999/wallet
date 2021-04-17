@@ -1,16 +1,18 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/Habibullo-1999/wallet/pkg/wallet"
 
 )
 
 func main() {
-	s := &wallet.Service{}
-	err := s.ImportToFile("../data/export.txt")
-	if err == nil {
-		fmt.Println("success")
-	}
+	svc := &wallet.Service{}
+
+	svc.RegisterAccount("+992926421505")
+	svc.RegisterAccount("+992926421502")
+	svc.RegisterAccount("+992926421503")
+	svc.RegisterAccount("+992926421504")
+	svc.RegisterAccount("+992926421506")
+	svc.RegisterAccount("+992926421507")
+	svc.ExportToFile("../data/export.txt")
 }
