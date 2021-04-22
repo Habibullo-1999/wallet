@@ -19,9 +19,7 @@ func main() {
 	}
 	s.FavoritePayment(pay.ID, "cat favorite")
 
-	err = s.Export("../data")
-	if err != nil {
-		log.Print(err)
-		return
-	}
+	payment, err := s.ExportAccountHistory(pay.AccountID)
+
+	s.HistoryToFiles(payment, "../data", 5)
 }
