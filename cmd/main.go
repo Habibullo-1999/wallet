@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	"github.com/Habibullo-1999/wallet/pkg/wallet"
 
@@ -9,12 +9,19 @@ import (
 
 func main() {
 	s := &wallet.Service{}
-	err := s.ImportFromFile("../data/export.txt")
-	if err == nil {
-		fmt.Println("success")
-	}
+	s.RegisterAccount("+992926421509")
+	s.RegisterAccount("+992926421506")
+	s.RegisterAccount("+992926421505")
+	s.Deposit(1, 5_000_00)
+	pay, err := s.Pay(1, 5000, "cat")
 	if err != nil {
-		fmt.Println("error")
+		log.Print(err)
 	}
+	s.FavoritePayment(pay.ID, "cat favorite")
 
+	err = s.Export("../data")
+	if err != nil {
+		log.Print(err)
+		return
+	}
 }
