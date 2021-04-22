@@ -4,6 +4,7 @@ import (
 	"errors"
 	"io"
 	"log"
+	"fmt"
 	"os"
 	"strconv"
 	"strings"
@@ -250,6 +251,64 @@ func (s *Service) ImportFromFile(path string) error {
 		}
 
 		s.accounts = append(s.accounts, account)
+	}
+	return nil
+}
+
+
+func (s *Service) Export(dir string) error {
+	if len(s.accounts) > 0 {
+		file, err := os.OpenFile(dir+"/accounts.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+		defer func() {
+			if cerr := file.Close(); cerr != nil {
+				if err != nil {
+					err = cerr
+					log.Print(err)
+				}
+			}
+		}()
+
+		str := ""
+
+		for _, v := range s.accounts {
+			str += fmt.Sprint(v.ID) + ";" + string(v.Phone) + ";" + fmt.Sprint(v.Balance) + "\n"
+		}
+		file.WriteString(str)
+	}
+	if len(s.payments) > 0 {
+		file, err := os.OpenFile(dir+"/payments.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+		defer func() {
+			if cerr := file.Close(); cerr != nil {
+				if err != nil {
+					err = cerr
+					log.Print(err)
+				}
+			}
+		}()
+
+		str := ""
+		for _, v := range s.payments {
+			str += fmt.Sprint(v.ID) + ";" + fmt.Sprint(v.AccountID) + ";" + fmt.Sprint(v.Amount) +";" + fmt.Sprint(v.Category)+";" + fmt.Sprint(v.Status)+"\n"
+		}
+		file.WriteString(str)
+	}
+	if len(s.favorites) > 0 {
+		file, err := os.OpenFile(dir+"/favorites.dump", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0666)
+		defer func() {
+			if cerr := file.Close(); cerr != nil {
+				if err != nil {
+					err = cerr
+					log.Print(err)
+				}
+			}
+		}()
+
+		str := ""
+
+		for _, v := range s.favorites {
+			str += fmt.Sprint(v.ID) + ";" + fmt.Sprint(v.AccountID) + ";" + fmt.Sprint(v.Amount) + ";" + fmt.Sprint(v.Category) +"\n"
+		}
+		file.WriteString(str)
 	}
 	return nil
 }
