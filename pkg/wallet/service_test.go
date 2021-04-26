@@ -511,7 +511,7 @@ func TestService_PayFromFavorite_fail(t *testing.T) {
 
 }
 
-func BenchmarkSumPayments(b *testing.B) {	
+func BenchmarkSumPayments_success(b *testing.B) {	
 	s := newTestService()
 	s.RegisterAccount("+992926421509")
 	s.RegisterAccount("+992926421506")
@@ -534,5 +534,130 @@ func BenchmarkSumPayments(b *testing.B) {
 		if result != want {
 			b.Fatalf("Invalid result, dot %v, want %v", result, want)
 		}
+	}
+}
+
+func BenchmarkSumPayment_user(b *testing.B) {
+	var svc Service
+
+	account, err := svc.RegisterAccount("+992000000001")
+
+	if err != nil {
+		b.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	err = svc.Deposit(account.ID, 100_00)
+	if err != nil {
+		b.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	for i := types.Money(1); i <= 10; i++ {
+		if _, err = svc.Pay(account.ID, i, "Cafe"); err != nil {
+			b.Errorf("method Pay returned not nil error, err => %v", err)
+		}
+	}
+
+	want := types.Money(55)
+
+	got := svc.SumPayments(5)
+	if want != got {
+		b.Errorf(" error, want => %v got => %v", want, got)
+	}
+
+}
+
+func TestService_ExportHistory_success_user(t *testing.T) {
+	svc := Service{}
+
+	acc, err := svc.RegisterAccount("+992000000001")
+
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", acc)
+	}
+
+	err = svc.Deposit(acc.ID, 100_00)
+	if err != nil {
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	_, err = svc.Pay(acc.ID, 1, "Cafe")
+	_, err = svc.Pay(acc.ID, 2, "Auto")
+	_, err = svc.Pay(acc.ID, 3, "MarketShop")
+	if err != nil {
+		t.Errorf("method Pay returned not nil error, err => %v", err)
+	}
+
+	payments, err := svc.ExportAccountHistory(acc.ID)
+	if err != nil {
+		t.Errorf("method ExportAccountHistory returned not nil error, err => %v", err)
+	}
+
+	err = svc.HistoryToFiles(payments, "../../data", 2)
+	if err != nil {
+		t.Errorf("method HistoryToFiles returned not nil error, err => %v", err)
+	}
+}
+
+func TestService_Export_success(t *testing.T) {
+	svc := Service{}
+
+	acc, err := svc.RegisterAccount("+992000000001")
+
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", acc)
+	}
+
+	err = svc.Deposit(acc.ID, 100_00)
+	if err != nil {
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	_, err = svc.Pay(acc.ID, 1, "Cafe")
+	payN, err := svc.Pay(acc.ID, 2, "Auto")
+	_, err = svc.Pay(acc.ID, 3, "MarketShop")
+	if err != nil {
+		t.Errorf("method Pay returned not nil error, err => %v", err)
+	}
+
+	_, err = svc.FavoritePayment(payN.ID, "love")
+	if err != nil {
+		t.Errorf("method Pay returned not nil error, err => %v", err)
+	}
+	
+	err = svc.Export("date")
+	if err != nil {
+		t.Errorf("method Export returned not nil error, err => %v", err)
+	}
+}
+
+func TestService_ExportHistory_success_one_file(t *testing.T) {
+	svc := Service{}
+
+	acc, err := svc.RegisterAccount("+992000000001")
+
+	if err != nil {
+		t.Errorf("method RegisterAccount returned not nil error, account => %v", acc)
+	}
+
+	err = svc.Deposit(acc.ID, 100_00)
+	if err != nil {
+		t.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+
+	_, err = svc.Pay(acc.ID, 1, "Cafe")
+	_, err = svc.Pay(acc.ID, 2, "Auto")
+	_, err = svc.Pay(acc.ID, 3, "MarketShop")
+	if err != nil {
+		t.Errorf("method Pay returned not nil error, err => %v", err)
+	}
+
+	payments, err := svc.ExportAccountHistory(acc.ID)
+	if err != nil {
+		t.Errorf("method ExportAccountHistory returned not nil error, err => %v", err)
+	}
+
+	err = svc.HistoryToFiles(payments, "../../data", 1)
+	if err != nil {
+		t.Errorf("method HistoryToFiles returned not nil error, err => %v", err)
 	}
 }
