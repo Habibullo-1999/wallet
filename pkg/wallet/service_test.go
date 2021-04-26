@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"testing"
+	"log"
 
 	"github.com/Habibullo-1999/wallet/pkg/types"
 	"github.com/google/uuid"
@@ -508,4 +509,30 @@ func TestService_PayFromFavorite_fail(t *testing.T) {
 		return
 	}
 
+}
+
+func BenchmarkSumPayments(b *testing.B) {	
+	s := newTestService()
+	s.RegisterAccount("+992926421509")
+	s.RegisterAccount("+992926421506")
+	s.RegisterAccount("+992926421505")
+	s.Deposit(1, 5_000_00)
+	
+	_, err := s.Pay(1, 5000, "cat")
+	_, err = s.Pay(1, 5000, "auto")
+	_, err = s.Pay(1, 5000, "auto")
+	_, err = s.Pay(1, 5000, "shop")
+	_, err = s.Pay(1, 5000, "food")
+	_, err = s.Pay(1, 5000, "coffe")
+	if err != nil {
+		log.Print(err)
+	}
+	
+	want:= types.Money(30000)	
+	for i := 0; i < b.N; i++ {
+		result := s.SumPayments(2)
+		if result != want {
+			b.Fatalf("Invalid result, dot %v, want %v", result, want)
+		}
+	}
 }
