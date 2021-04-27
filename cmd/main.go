@@ -13,7 +13,7 @@ func main() {
 	s.RegisterAccount("+992926421506")
 	s.RegisterAccount("+992926421505")
 	s.Deposit(1, 5_000_00)
-	_, err := s.Pay(1, 5000, "cat")
+	pay, err := s.Pay(1, 5000, "cat")
 	_, err = s.Pay(1, 5000, "auto")
 	_, err = s.Pay(1, 5000, "auto")
 	_, err = s.Pay(1, 5000, "shop")
@@ -24,9 +24,12 @@ func main() {
 		log.Print(err)
 	}
 
-	money := s.SumPayments(5)
+	// money := s.SumPayments(5)
+	_, err = s.FilterPayments(pay.AccountID, 5)
+			if err != nil {
+				log.Print(err)	
+			}
 
-	log.Print(money)
 	// s.FavoritePayment(pay.ID, "cat favorite")
 
 	// payment, err := s.ExportAccountHistory(pay.AccountID)

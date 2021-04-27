@@ -2,9 +2,9 @@ package wallet
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"testing"
-	"log"
 
 	"github.com/Habibullo-1999/wallet/pkg/types"
 	"github.com/google/uuid"
@@ -511,13 +511,13 @@ func TestService_PayFromFavorite_fail(t *testing.T) {
 
 }
 
-func BenchmarkSumPayments_success(b *testing.B) {	
+func BenchmarkSumPayments_success(b *testing.B) {
 	s := newTestService()
 	s.RegisterAccount("+992926421509")
 	s.RegisterAccount("+992926421506")
 	s.RegisterAccount("+992926421505")
 	s.Deposit(1, 5_000_00)
-	
+
 	_, err := s.Pay(1, 5000, "cat")
 	_, err = s.Pay(1, 5000, "auto")
 	_, err = s.Pay(1, 5000, "auto")
@@ -527,8 +527,8 @@ func BenchmarkSumPayments_success(b *testing.B) {
 	if err != nil {
 		log.Print(err)
 	}
-	
-	want:= types.Money(30000)	
+
+	want := types.Money(30000)
 	for i := 0; i < b.N; i++ {
 		result := s.SumPayments(2)
 		if result != want {
@@ -562,6 +562,33 @@ func BenchmarkSumPayment_user(b *testing.B) {
 	got := svc.SumPayments(5)
 	if want != got {
 		b.Errorf(" error, want => %v got => %v", want, got)
+	}
+
+}
+
+func BenchmarkFilterPayments_success(b *testing.B) {
+	var svc Service
+
+	account, err := svc.RegisterAccount("+992000000001")
+
+	if err != nil {
+		b.Errorf("method RegisterAccount returned not nil error, account => %v", account)
+	}
+
+	err = svc.Deposit(account.ID, 100_00)
+	if err != nil {
+		b.Errorf("method Deposit returned not nil error, error => %v", err)
+	}
+	var pay *types.Payment
+	for i := types.Money(1); i <= 10; i++ {
+		if pay, err = svc.Pay(account.ID, i, "Cafe"); err != nil {
+			b.Errorf("method Pay returned not nil error, err => %v", err)
+		}
+	}
+
+	_, err = svc.FilterPayments(pay.AccountID, 5)
+	if err != nil {
+		b.Errorf("method FilterPayments returned not nil error, account => %v", account)
 	}
 
 }
@@ -623,7 +650,7 @@ func TestService_Export_success(t *testing.T) {
 	if err != nil {
 		t.Errorf("method Pay returned not nil error, err => %v", err)
 	}
-	
+
 	err = svc.Export("date")
 	if err != nil {
 		t.Errorf("method Export returned not nil error, err => %v", err)
