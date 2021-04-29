@@ -613,11 +613,11 @@ func (s *Service) SumPayments(goroutines int) types.Money {
 // 	wg.Wait()
 // 	return payments, nil
 // }
-func (s *Service) FilterPayments(accountID int64, goroutines int) ([]types.Payment, error){
-	
+func (s *Service) FilterPayments(accountID int64, goroutines int) ([]types.Payment, error) {
+
 	_, err := s.FindAccountByID(accountID)
 	if err != nil {
-		return nil, err
+		return nil, ErrAccountNotFound
 	}
 
 	wg := sync.WaitGroup{}
@@ -680,7 +680,6 @@ func (s *Service) FilterPayments(accountID int64, goroutines int) ([]types.Payme
 	}
 	return ps, nil
 }
-
 
 //FilterPaymentsByFn ...
 func (s *Service) FilterPaymentsByFn(filter func(payment types.Payment) bool, goroutines int) ([]types.Payment, error) {
@@ -751,4 +750,82 @@ func (s *Service) FilterPaymentsByFn(filter func(payment types.Payment) bool, go
 	return ps, nil
 }
 
+func (s *Service) SumPaymentsWithProgress() <-chan types.Progress {
+	ch := make(chan types.Progress)
 
+	size := 100_000
+	parts := len(s.payments) / size
+	wg := sync.WaitGroup{}
+
+	i := 0
+	if parts < 1 {
+		parts = 1
+	}
+
+	for i := 0; i < parts; i++ {
+		wg.Add(1)
+		var payments []*types.Payment
+		if len(s.payments) < size {
+			payments = s.payments
+		} else {
+			payments = s.payments[i*size : (i+1)*size]
+		}
+		go func(ch chan types.Progress, data []*types.Payment) {
+			defer wg.Done()
+			val := types.Money(0)
+			for _, v := range data {
+				val += v.Amount
+			}
+			if len(s.payments) < size {
+				ch <- types.Progress{
+					Part:   len(data),
+					Result: val,
+				}
+			}
+
+		}(ch, payments)
+	}
+	if len(s.payments) > size {
+		wg.Add(1)
+		payments := s.payments[i*size:]
+		go func(ch chan types.Progress, data []*types.Payment) {
+			defer wg.Done()
+			val := types.Money(0)
+			for _, v := range data {
+				val += v.Amount
+			}
+			ch <- types.Progress{
+				Part:   len(data),
+				Result: val,
+			}
+
+		}(ch, payments)
+	}
+
+	go func() {
+		defer close(ch)
+		wg.Wait()
+	}()
+
+	return ch
+}
+
+
+func merge(channels []<-chan types.Progress) <-chan types.Progress {
+	wg := sync.WaitGroup{}
+	wg.Add(len(channels))
+	merged := make(chan types.Progress)
+	for _, ch := range channels {
+		go func(ch <-chan types.Progress) {
+			defer wg.Done()
+			for val := range ch {
+				merged <- val
+			}
+		}(ch)
+	}
+	go func() {
+		defer close(merged)
+		wg.Wait()
+	}()
+	return merged
+}
